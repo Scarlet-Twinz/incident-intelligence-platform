@@ -1,0 +1,67 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: api
+    container_name: vanta-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+
+      DB_HOST: host.docker.internal
+      DB_PORT: 5435
+      DB_USER: vanta
+      DB_PASSWORD: vanta_dev_password
+      DB_NAME: vanta
+
+      REDIS_HOST: host.docker.internal
+      REDIS_PORT: 6381
+
+      OLLAMA_URL: http://host.docker.internal:11434/api/chat
+      OLLAMA_MODEL: qwen2.5:3b-instruct
+    ports:
+      - "4000:4000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: worker
+    container_name: vanta-worker
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+
+      DB_HOST: host.docker.internal
+      DB_PORT: 5435
+      DB_USER: vanta
+      DB_PASSWORD: vanta_dev_password
+      DB_NAME: vanta
+
+      REDIS_HOST: host.docker.internal
+      REDIS_PORT: 6381
+
+      OLLAMA_URL: http://host.docker.internal:11434/api/chat
+      OLLAMA_MODEL: qwen2.5:3b-instruct
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: web
+    container_name: vanta-web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+    ports:
+      - "3001:3000"
+    depends_on:
+      - api

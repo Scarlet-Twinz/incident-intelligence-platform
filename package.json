@@ -1,0 +1,11 @@
+{
+  "name": "incident-intelligence-platform",
+  "private": true,
+  "version": "0.1.0",
+  "description": "AI-powered support, incident triage, and operational intelligence platform.",
+  "scripts": {
+    "dev": "pnpm --parallel --filter web --filter api dev",
+    "build": "pnpm --recursive build",
+    "test": "pnpm --recursive test"
+  }
+}
