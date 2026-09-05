@@ -10,6 +10,12 @@ The platform combines a Fastify API, PostgreSQL, Redis, BullMQ, Next.js, server-
 
 ---
 
+## Product Preview
+
+A conceptual view of the VANTA experience: an operations dashboard centered on incident volume, severity, priority, service health, AI processing, realtime activity, and incident-level investigation. The interface is designed to make the flow from **incident intake → AI analysis → prioritization → assignment → resolution** easy to understand at a glance.
+
+---
+
 ## Overview
 
 VANTA is built around an event-driven incident-processing workflow:
