@@ -2,8 +2,6 @@
 
 **AI-powered incident triage, operational intelligence, and real-time incident management platform.**
 
-**Repository:** https://github.com/Scarlet-Twinz/incident-intelligence-platform
-
 VANTA is a full-stack operational intelligence platform designed to help engineering teams capture incidents, classify them, prioritize response, detect potential duplicates, assign ownership, process AI analysis asynchronously, and monitor operational activity in real time.
 
 The platform combines a Fastify API, PostgreSQL, Redis, BullMQ, Next.js, server-sent events, and a local Ollama-powered AI assistant called **LYROMI**.
@@ -521,7 +519,7 @@ The project includes production-oriented configuration through:
 
 For a real production deployment, PostgreSQL, Redis, Ollama, API, worker, and web services must be hosted on infrastructure that can communicate with one another.
 
-The current repository does **not** claim a public production deployment.
+The current repository does not claim a public production deployment.
 
 **Deployment status: Not currently deployed.**
 
@@ -529,9 +527,9 @@ The current repository does **not** claim a public production deployment.
 
 ## Security Notes
 
-This repository is a portfolio and engineering demonstration project.
+The current authentication and infrastructure configuration should be strengthened before production use.
 
-Before production use, the following should be strengthened:
+Recommended production controls include:
 
 - Replace the prototype browser-storage authentication with server-side authentication.
 - Hash passwords using a dedicated password-hashing algorithm on the backend.
@@ -547,7 +545,7 @@ Before production use, the following should be strengthened:
 
 ## Current Status
 
-**Status: Functional full-stack portfolio project**
+**Functional full-stack operational intelligence platform.**
 
 Implemented:
 
@@ -569,23 +567,31 @@ Implemented:
 - Docker production-style builds
 - GitHub Actions CI configuration
 
-The application is currently intended for local development, demonstration, and portfolio use.
+The application is currently intended for local development and demonstration.
 
 ---
 
-## Why VANTA?
+## Engineering Focus
 
-VANTA was built to demonstrate more than a conventional CRUD application.
+VANTA focuses on the engineering problems involved in operational intelligence systems:
 
-The project focuses on operational workflows, asynchronous job processing, AI-assisted triage, realtime communication, analytics, containerization, CI, database integration, and practical production architecture.
+- event-driven incident processing;
+- asynchronous AI workloads;
+- queue-based background execution;
+- realtime communication with SSE;
+- operational analytics;
+- duplicate and priority detection;
+- containerized service architecture;
+- local AI inference with Ollama;
+- automated build and deployment validation.
 
-It is designed as a compact example of how an incident-management workflow can connect user-facing operations with background intelligence and realtime feedback.
+The architecture connects user-facing incident operations with background intelligence and realtime feedback.
 
 ---
 
 ## License
 
-This project is currently a portfolio and learning project and does not declare an open-source license.
+This project does not currently declare an open-source license.
 
 ## Author
 
