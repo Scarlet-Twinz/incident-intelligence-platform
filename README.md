@@ -1,117 +1,77 @@
 # VANTA — Operational Intelligence
 
-**AI-powered incident triage, operational intelligence, and real-time incident management platform.**
+**AI-assisted incident triage, operational intelligence, and realtime incident management.**
 
-VANTA is a full-stack operational intelligence platform designed to help engineering teams capture incidents, classify them, prioritize response, detect potential duplicates, assign ownership, process AI analysis asynchronously, and monitor operational activity in real time.
+VANTA connects incident intake, classification, prioritization, duplicate detection, assignment, background AI processing, analytics, and realtime operational updates in one full-stack system.
 
-The platform combines a Fastify API, PostgreSQL, Redis, BullMQ, Next.js, server-sent events, and a local Ollama-powered AI assistant called **LYROMI**.
+It is intentionally documented as a **local development/prototype platform**, not as a production-ready incident-management service.
 
----
-
-## Product Preview
-
-A conceptual view of the VANTA experience: an operations dashboard centered on incident volume, severity, priority, service health, AI processing, realtime activity, and incident-level investigation. The interface is designed to make the flow from **incident intake → AI analysis → prioritization → assignment → resolution** easy to understand at a glance.
-
----
-
-## Overview
-
-VANTA is built around an event-driven incident-processing workflow:
+## System Flow
 
 ```text
-User / Operator
-      │
-      ▼
- Next.js UI
-      │
-      ▼
-  Fastify API
-   │    │    │
-   │    │    └──────────────► SSE / Realtime Updates
-   │    │
-   │    └───────────────────► Redis + BullMQ
-   │                              │
-   │                              ▼
-   │                        Background Worker
-   │                         │    │    │
-   │                         │    │    └── Duplicate Detection
-   │                         │    └────── Priority Detection
-   │                         └─────────── AI Summary / Analysis
+Operator
    │
-   └────────────────────────► PostgreSQL
+   ▼
+Next.js UI
+   │
+   ▼
+Fastify API ───────────────► SSE / Realtime
+   │
+   ├──────────────► PostgreSQL
+   │
+   └──────────────► Redis + BullMQ
+                         │
+                         ▼
+                   Background Worker
+                    │    │    │
+                    │    │    └── Duplicate Detection
+                    │    └────── Priority Detection
+                    └─────────── AI Summary / Classification
 
- LYROMI AI Assistant
-        │
-        ▼
- Qwen 2.5 3B Instruct
-        │
-        ▼
-      Ollama
+LYROMI
+   │
+   ▼
+Qwen 2.5 3B Instruct / Ollama
 ```
 
-The architecture separates request handling from background AI processing while keeping operators informed through real-time updates.
+The architecture keeps AI work off the synchronous request path while SSE keeps operators informed about changes as processing completes.
 
----
+## Core Features
 
-## Features
+### Incident operations
 
-### Incident management
+- Incident creation and persistence
+- Severity and status tracking
+- Service and category metadata
+- Assignment and reassignment
+- Priority information
 
-- Create and view operational incidents
-- Persistent PostgreSQL storage
-- Incident severity and status tracking
-- Service and category information
-- Incident assignment and reassignment
-- Incident priority information
+### AI-assisted triage
 
-### AI-assisted incident triage
-
-- Automatic incident classification
-- Classification confidence and reasoning
+- Automatic classification
+- Classification confidence/reasoning
 - Priority detection
-- AI-generated incident summaries
+- AI-generated summaries
 - Duplicate incident detection
 - Background processing through BullMQ
 
-### LYROMI — AI Operational Assistant
+### LYROMI
 
-LYROMI is the AI assistant inside VANTA.
+LYROMI is the AI assistant inside VANTA. It reads current incident context from PostgreSQL, answers operational questions from available data, and streams responses through the API.
 
-- Uses Qwen 2.5 3B Instruct through Ollama
-- Reads current incident context from PostgreSQL
-- Answers operational questions using available incident data
-- Streams responses to the browser
-- Avoids inventing incidents or operational facts
-- Focuses on concise, operationally useful responses
+The assistant is designed not to invent incident facts. It is an intelligence layer over application-owned operational data, not the source of truth for incident state.
 
-### Real-time operations
+### Realtime operations
 
-- Server-Sent Events for live incident updates
-- Live connection status
+- Server-Sent Events
+- Live connection state
 - Incident-created events
-- Incident-assignment events
-- Heartbeat handling for long-lived realtime connections
+- Assignment events
+- Heartbeat handling for long-lived connections
 
 ### Analytics
 
-The dashboard exposes operational metrics including:
-
-- Total incidents
-- Open incidents
-- Priority distribution
-- Severity distribution
-- Category distribution
-- Service distribution
-- Assigned versus unassigned incidents
-- AI-processed versus pending incidents
-
-### Authentication interface
-
-The application includes signup, login, session handling, and logout flows for the current prototype.
-
-> **Security note:** the current authentication implementation is a local prototype using browser storage. It is not a production authentication system and should be replaced with server-side authentication, secure password hashing, and protected sessions before production use.
-
----
+The dashboard exposes incident volume, open incidents, priority/severity distribution, category/service distribution, assignment state, and AI processing state.
 
 ## Tech Stack
 
@@ -121,55 +81,56 @@ The application includes signup, login, session handling, and logout flows for t
 | API | Fastify 5, TypeScript |
 | Database | PostgreSQL 16 |
 | Queue | BullMQ 6 |
-| Message Broker | Redis 7 |
-| Realtime | Server-Sent Events (SSE) |
-| AI Runtime | Ollama |
-| AI Model | Qwen 2.5 3B Instruct |
-| Package Manager | pnpm 11 |
-| Runtime | Node.js 22 |
-| Containers | Docker, Docker Compose |
+| Broker | Redis 7 |
+| Realtime | Server-Sent Events |
+| AI runtime | Ollama |
+| Model | Qwen 2.5 3B Instruct |
+| Infrastructure | Docker / Docker Compose |
 | CI | GitHub Actions |
+| Workspace | pnpm |
+| Runtime | Node.js 22 |
 
----
+## Architecture Decisions
 
-## Project Structure
+### AI is asynchronous
+
+Incident creation does not need to wait for every AI operation. The API persists the incident and queues work so classification, priority detection, duplicate detection, and summaries can happen independently.
+
+### Realtime is separate from persistence
+
+PostgreSQL remains the source of persisted incident state. SSE is the delivery mechanism used to inform connected clients about changes.
+
+### Local AI runtime
+
+Ollama keeps the development model local. The application can therefore exercise the AI workflow without treating a hosted model provider as a mandatory dependency.
+
+## Security Boundary
+
+The current authentication implementation uses browser storage and is explicitly a prototype. It is **not suitable for production authentication**.
+
+Before deployment, the project needs server-side authentication, secure password hashing, protected sessions/cookies, authorization on protected operations, rate limiting, secret management, restricted CORS, TLS, and stronger infrastructure isolation.
+
+## Repository Structure
 
 ```text
 incident-intelligence-platform/
 ├── apps/
 │   ├── api/
-│   │   ├── src/
-│   │   │   ├── ai/              # Classification, priority, duplicate detection, summaries, Ollama
-│   │   │   ├── db/              # PostgreSQL connection
-│   │   │   ├── queue/            # BullMQ queues
-│   │   │   ├── realtime/         # SSE event broadcasting
-│   │   │   ├── redis/            # Redis connection
-│   │   │   ├── index.ts          # Fastify API
-│   │   │   └── worker.ts         # Background worker
-│   │   └── package.json
-│   │
+│   │   ├── src/ai/
+│   │   ├── src/db/
+│   │   ├── src/queue/
+│   │   ├── src/realtime/
+│   │   └── src/redis/
 │   └── web/
-│       ├── src/app/              # Next.js routes and pages
-│       ├── src/components/       # Shared application shell
-│       ├── src/lib/              # Client utilities and authentication
-│       └── package.json
-│
-├── .github/workflows/ci.yml      # CI pipeline
-├── .env.example                  # Environment variable template
-├── .dockerignore
-├── Dockerfile                    # API, worker, and web build targets
-├── docker-compose.yml            # Local production-style containers
-├── package.json
-├── pnpm-lock.yaml
-├── pnpm-workspace.yaml
-└── README.md
+├── .github/workflows/ci.yml
+├── Dockerfile
+├── docker-compose.yml
+└── package.json
 ```
 
----
+## Local Development
 
-## Prerequisites
-
-Install the following before running VANTA locally:
+### Prerequisites
 
 - Node.js 22+
 - pnpm 11+
@@ -177,426 +138,39 @@ Install the following before running VANTA locally:
 - Ollama
 - Qwen 2.5 3B Instruct model
 
-Pull the AI model with Ollama if it is not already installed:
-
 ```bash
 ollama pull qwen2.5:3b-instruct
-```
-
----
-
-## Local Development
-
-### 1. Clone the repository
-
-```bash
 git clone https://github.com/Scarlet-Twinz/incident-intelligence-platform.git
 cd incident-intelligence-platform
-```
-
-### 2. Install dependencies
-
-```bash
 pnpm install
 ```
 
-### 3. Configure environment variables
-
-Copy the example configuration:
-
-```bash
-copy .env.example .env
-```
-
-On macOS/Linux:
-
-```bash
-cp .env.example .env
-```
-
-The default local configuration expects:
-
-```text
-PostgreSQL → localhost:5435
-Redis      → localhost:6381
-API        → localhost:4000
-Ollama     → localhost:11434
-```
-
-### 4. Start PostgreSQL and Redis
-
-The project uses the following Docker containers for local infrastructure:
-
-```bash
-docker run --name vanta-postgres \
-  -e POSTGRES_USER=vanta \
-  -e POSTGRES_PASSWORD=vanta_dev_password \
-  -e POSTGRES_DB=vanta \
-  -p 5435:5432 \
-  -d postgres:16
-```
-
-```bash
-docker run --name vanta-redis \
-  -p 6381:6379 \
-  -d redis:7-alpine
-```
-
-If these containers already exist, simply start them:
-
-```bash
-docker start vanta-postgres vanta-redis
-```
-
-### 5. Start Ollama
-
-Make sure Ollama is running and the model is available:
-
-```bash
-ollama list
-```
-
-The default model is:
-
-```text
-qwen2.5:3b-instruct
-```
-
-### 6. Start the API
+Start PostgreSQL and Redis using the repository's documented configuration, start Ollama, then run:
 
 ```bash
 pnpm --filter api dev
-```
-
-API:
-
-```text
-http://localhost:4000
-```
-
-### 7. Start the worker
-
-In another terminal:
-
-```bash
 pnpm --filter api worker
-```
-
-### 8. Start the web application
-
-In another terminal:
-
-```bash
 pnpm --filter web dev
 ```
 
-Web application:
+## Validation
 
-```text
-http://localhost:3000
-```
-
----
-
-## Environment Variables
-
-The main variables are documented in `.env.example`.
-
-| Variable | Purpose | Local default |
-| --- | --- | --- |
-| `PORT` | API port | `4000` |
-| `DB_HOST` | PostgreSQL host | `localhost` |
-| `DB_PORT` | PostgreSQL port | `5435` |
-| `DB_USER` | PostgreSQL user | `vanta` |
-| `DB_PASSWORD` | PostgreSQL password | `vanta_dev_password` |
-| `DB_NAME` | PostgreSQL database | `vanta` |
-| `REDIS_HOST` | Redis host | `localhost` |
-| `REDIS_PORT` | Redis port | `6381` |
-| `OLLAMA_URL` | Ollama chat endpoint | `http://127.0.0.1:11434/api/chat` |
-| `OLLAMA_MODEL` | LYROMI model | `qwen2.5:3b-instruct` |
-| `NEXT_PUBLIC_API_URL` | Browser-facing API URL | `http://localhost:4000` |
-
-Never commit real credentials or production secrets.
-
----
-
-## API
-
-### Health
-
-```http
-GET /health
-```
-
-### Database health
-
-```http
-GET /health/database
-```
-
-### Redis health
-
-```http
-GET /health/redis
-```
-
-### Realtime health
-
-```http
-GET /health/realtime
-```
-
-### List incidents
-
-```http
-GET /incidents
-```
-
-### Create an incident
-
-```http
-POST /incidents
-Content-Type: application/json
-```
-
-Example:
-
-```json
-{
-  "title": "Payment API latency spike",
-  "description": "Payment requests are taking longer than expected.",
-  "service": "payments",
-  "severity": "HIGH"
-}
-```
-
-Creating an incident stores it in PostgreSQL, classifies it, queues background processing, and broadcasts an incident-created realtime event.
-
-### Assign an incident
-
-```http
-PATCH /incidents/:id/assignment
-Content-Type: application/json
-```
-
-Example:
-
-```json
-{
-  "assignee": "engineering-team"
-}
-```
-
-### Incident classification
-
-```http
-POST /ai/classify
-Content-Type: application/json
-```
-
-### LYROMI streaming chat
-
-```http
-POST /ai/chat
-Content-Type: application/json
-```
-
-Example:
-
-```json
-{
-  "message": "Which incidents currently need the most attention?"
-}
-```
-
----
-
-## Build
-
-Build the API:
-
-```bash
-pnpm --filter api build
-```
-
-Build the web application:
-
-```bash
-pnpm --filter web build
-```
-
-Build everything:
-
-```bash
-pnpm build
-```
-
----
-
-## Testing and Validation
-
-The project has been validated with the following checks during development:
-
-```bash
-pnpm --filter api build
-pnpm --filter web build
-docker compose config
-docker compose build
-```
-
-The web lint configuration reports selected React/Next.js rules as warnings where the current application architecture intentionally performs client-side state initialization or incremental streaming updates. Lint feedback remains visible without blocking the production build.
-
----
-
-## Docker
-
-The repository includes a multi-stage Dockerfile with separate runtime targets for:
-
-- API
-- Background worker
-- Next.js web application
-
-Build the images:
-
-```bash
-docker compose build
-```
-
-Start the complete containerized application:
-
-```bash
-docker compose up -d
-```
-
-Check service status:
-
-```bash
-docker compose ps
-```
-
-Local container endpoints:
-
-```text
-Web      → http://localhost:3001
-API      → http://localhost:4000
-Worker   → background service
-```
-
-The Docker setup uses the host machine's Ollama service rather than downloading a separate Ollama container image. This keeps the AI runtime local and avoids duplicating the Qwen model inside Docker.
-
----
-
-## CI
-
-GitHub Actions is configured in:
-
-```text
-.github/workflows/ci.yml
-```
-
-The pipeline validates:
-
-- Dependency installation with the locked pnpm version
-- API TypeScript build
-- Web linting
-- Web production build
-- Docker Compose configuration
-- Docker image builds
-
----
-
-## Production Configuration
-
-The project includes production-oriented configuration through:
-
-- Next.js standalone output
-- Multi-stage Docker builds
-- Separate API and worker runtime targets
-- Docker Compose services
-- Environment-based configuration
-- GitHub Actions CI
-- Restart policies for container services
-
-For a real production deployment, PostgreSQL, Redis, Ollama, API, worker, and web services must be hosted on infrastructure that can communicate with one another.
-
-The current repository does not claim a public production deployment.
-
-**Deployment status: Not currently deployed.**
-
----
-
-## Security Notes
-
-The current authentication and infrastructure configuration should be strengthened before production use.
-
-Recommended production controls include:
-
-- Replace the prototype browser-storage authentication with server-side authentication.
-- Hash passwords using a dedicated password-hashing algorithm on the backend.
-- Use secure, HTTP-only session cookies or another server-side session mechanism.
-- Move all production credentials into a secret manager or deployment platform secrets.
-- Restrict CORS origins instead of allowing arbitrary origins.
-- Add request rate limiting and authentication/authorization to protected API routes.
-- Use TLS for externally exposed services.
-- Secure PostgreSQL and Redis behind private networking where possible.
-- Run Ollama behind an appropriate protected network boundary.
-
----
+The repository includes production-style Docker build configuration and GitHub Actions validation for dependency installation, API build, web lint/build, Docker Compose configuration, and image builds.
 
 ## Current Status
 
-**Functional full-stack operational intelligence platform.**
+**Functional full-stack operational intelligence prototype.**
 
-Implemented:
+Implemented: incident operations, PostgreSQL persistence, Redis/BullMQ processing, AI classification/priority/duplicate detection, summaries, assignment, SSE updates, analytics, LYROMI, Docker build targets, and CI configuration.
 
-- Full Next.js dashboard
-- Incident creation and persistence
-- PostgreSQL integration
-- Redis integration
-- BullMQ background processing
-- Automatic incident classification
-- Priority detection
-- Duplicate detection
-- AI-generated summaries
-- Incident assignment
-- Realtime SSE updates
-- Operational analytics
-- LYROMI AI assistant
-- Streaming AI responses
-- Signup/login/logout prototype flow
-- Docker production-style builds
-- GitHub Actions CI configuration
-
-The application is currently intended for local development and demonstration.
-
----
-
-## Engineering Focus
-
-VANTA focuses on the engineering problems involved in operational intelligence systems:
-
-- event-driven incident processing;
-- asynchronous AI workloads;
-- queue-based background execution;
-- realtime communication with SSE;
-- operational analytics;
-- duplicate and priority detection;
-- containerized service architecture;
-- local AI inference with Ollama;
-- automated build and deployment validation.
-
-The architecture connects user-facing incident operations with background intelligence and realtime feedback.
-
----
+**Deployment status: not currently deployed.**
 
 ## License
 
-This project does not currently declare an open-source license.
+No open-source license is currently declared.
 
 ## Author
 
 **Anthony Emmanuella Mmasinachi**
 
-Full-stack developer focused on frontend engineering, backend systems, APIs, automation, databases, realtime applications, and practical software architecture.
-
-**GitHub:** https://github.com/Scarlet-Twinz
+Full-stack and systems engineer focused on backend systems, distributed processing, realtime applications, AI integration, networking, and practical software engineering.
