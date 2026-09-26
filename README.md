@@ -1,4 +1,4 @@
-# VANTA — Operational Intelligence
+#  VANTA — Operational Intelligence
 
 **AI-assisted incident triage, operational intelligence, and realtime incident management.**
 
