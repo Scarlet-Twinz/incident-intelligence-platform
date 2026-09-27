@@ -169,6 +169,9 @@ Implemented: incident operations, PostgreSQL persistence, Redis/BullMQ processin
 
 This repository is public and released under the MIT License. See [LICENSE](LICENSE).
 
+
+The repository is public and documented as a portfolio engineering project, with prototype boundaries stated explicitly.
+
 ## Author
 
 **Anthony Emmanuella Mmasinachi**
