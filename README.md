@@ -167,7 +167,7 @@ Implemented: incident operations, PostgreSQL persistence, Redis/BullMQ processin
 
 ## License
 
-No open-source license is currently declared.
+This repository is proprietary. See [LICENSE](LICENSE). No open-source license is granted.
 
 ## Author
 
