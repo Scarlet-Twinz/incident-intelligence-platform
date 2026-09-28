@@ -165,21 +165,9 @@ Implemented: incident operations, PostgreSQL persistence, Redis/BullMQ processin
 
 **Deployment status: not currently deployed.**
 
+
 ## License
 
-This repository is public and released under the MIT License. See [LICENSE](LICENSE).
+MIT License.
 
-
-The repository is public and documented as a portfolio engineering project, with prototype boundaries stated explicitly.
-
-## Author
-
-**Anthony Emmanuella Mmasinachi**
-
-Full-stack and systems engineer focused on backend systems, distributed processing, realtime applications, AI integration, networking, and practical software engineering.
-
-## Project Links
-
-- **Repository:** https://github.com/Scarlet-Twinz/incident-intelligence-platform
-- **Author:** Anthony Emmanuella Mmasinachi
-- **GitHub:** https://github.com/Scarlet-Twinz
+See [LICENSE](LICENSE) for the full license text.
